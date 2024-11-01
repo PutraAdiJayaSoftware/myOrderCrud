@@ -1,0 +1,281 @@
+@{  
+    ViewBag.Title = "Edit Sales Order";  
+}  
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Sales Order</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-center">Edit - Sales Order</h2>
+
+    <!-- Sales Order Information -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">Sales Order Information</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="orderNo" class="form-label">Sales Order Number</label>
+                    <input type="text" class="form-control" id="orderNo" placeholder="Enter Order Number">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="customer" class="form-label">Customer</label>
+                    <select class="form-select" id="customer">
+                        <option selected>Select Customer</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="orderDate" class="form-label">Order Date</label>
+                    <input type="date" class="form-control" id="orderDate">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" placeholder="Enter Address">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Item Information -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">Detail Item Information</div>
+        <div class="card-body">
+            <button class="btn btn-danger mb-3" id="addItemBtn">Add Item</button>
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Action</th>
+                        <th>Item Name</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemTableBody">
+                    <!-- Item rows will be added here by JavaScript -->
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Total Item:</strong> <span id="totalItems">0</span></p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p><strong>Total Amount:</strong> <span id="totalAmount">0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save and Close Buttons -->
+    <div class="text-center">
+        <button class="btn btn-primary" id="saveOrderBtn">Update</button>
+        <button class="btn btn-secondary" onclick="window.location.replace('./index');">Close</button>
+    </div>
+</div>
+
+<!-- Modal for Adding Item -->
+<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemModalLabel">Add Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Item Name</label>
+                        <input type="text" class="form-control" id="itemName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" class="form-control" id="price" min="0" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let itemCounter = 0;
+    let totalAmount = 0;
+
+    async function loadCustomers() {
+        try {
+            const response = await fetch('/api/customer');
+            if (response.ok) {
+                const customers = await response.json();
+                const customerSelect = document.getElementById('customer');
+                customers.forEach(customer => {
+                    const option = document.createElement('option');
+                    option.value = customer.COM_CUSTOMER_ID;
+                    option.textContent = customer.CUSTOMER_NAME;
+                    customerSelect.appendChild(option);
+                }); 
+            } else {
+                console.error("Failed to fetch customers: ", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching customers: ", error);
+        }
+    }
+
+    async function loadOrderData() {
+        // Mendapatkan ID dari URL
+        const urlSegments = window.location.pathname.split('/');
+        const id = urlSegments[urlSegments.length - 1]; // Mengambil ID dari URL
+
+        try {
+            const response = await fetch(`/api/SOOrder/${id}`);
+            if (response.ok) {
+                const orderData = await response.json();
+
+                // Isi field dengan data order
+                document.getElementById('orderNo').value = orderData.ORDER_NO;
+                document.getElementById('orderDate').value = new Date(orderData.ORDER_DATE).toISOString().split('T')[0];
+                document.getElementById('address').value = orderData.ADDRESS;
+
+                // Pilih customer
+                const customerSelect = document.getElementById('customer');
+                customerSelect.value = orderData.COM_CUSTOMER_ID;
+
+                // Tampilkan item dalam tabel
+                orderData.Items.forEach(item => {
+                    addItemToTable(item.ITEM_NAME, item.QUANTITY, item.PRICE, item.SO_ITEM_ID);
+                });
+
+            } else {
+                console.error("Failed to fetch order data: ", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching order data: ", error);
+        }
+    }
+
+    function addItemToTable(itemName, quantity, price, soItemId) {
+        const itemTableBody = document.getElementById('itemTableBody');
+        const total = quantity * price;
+
+        itemCounter++;
+        totalAmount += total;
+
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${itemCounter}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeItem(this, ${total})">Remove</button></td>
+            <td>${itemName}</td>
+            <td>${quantity}</td>
+            <td>${price.toFixed(2)}</td>
+            <td>${total.toFixed(2)}</td>
+        `;
+
+        itemTableBody.appendChild(row);
+
+        document.getElementById('totalItems').textContent = itemCounter;
+        document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+    }
+
+    loadCustomers();
+    loadOrderData();
+
+    // Add Item Modal
+    document.getElementById('addItemBtn').addEventListener('click', () => {
+        const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+        itemModal.show();
+    });
+
+    // Handle Item Submission
+    document.getElementById('itemForm').addEventListener('submit', event => {
+        event.preventDefault();
+        
+        const itemName = document.getElementById('itemName').value;
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const price = parseFloat(document.getElementById('price').value);
+        const total = quantity * price;
+
+        addItemToTable(itemName, quantity, price);
+
+        const itemModal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
+        itemModal.hide();
+
+        document.getElementById('itemForm').reset();
+    });
+
+    // Remove Item Function
+    function removeItem(button, itemTotal) {
+        button.closest('tr').remove();
+        itemCounter--;
+        totalAmount -= itemTotal;
+
+        document.getElementById('totalItems').textContent = itemCounter;
+        document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+    }
+
+    // Save Order
+    document.getElementById('saveOrderBtn').addEventListener('click', async () => {
+        const orderNo = document.getElementById('orderNo').value;
+        const orderDate = document.getElementById('orderDate').value;
+        const comCustomerId = document.getElementById('customer').value;
+        const address = document.getElementById('address').value;
+
+        const items = Array.from(document.querySelectorAll('#itemTableBody tr')).map(row => {
+            const cells = row.children;
+            return {
+                ITEM_NAME: cells[2].textContent,
+                QUANTITY: parseInt(cells[3].textContent),
+                PRICE: parseFloat(cells[4].textContent),
+                SO_ITEM_ID: 0,
+                SO_ORDER_ID: 0 
+            };
+        });
+        const urlSegments = window.location.pathname.split('/');
+        const id = urlSegments[urlSegments.length - 1]; // Mengambil ID dari URL
+
+        const orderData = {
+            SO_ORDER_ID: parseInt(id), // Ganti dengan ID yang benar
+            ORDER_NO: orderNo,
+            ORDER_DATE: orderDate,
+            COM_CUSTOMER_ID: parseInt(comCustomerId),
+            ADDRESS: address,
+            Items: items
+        };
+         
+        const response = await fetch(`/api/soorder/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            alert('Order saved successfully!');
+            window.location.replace("./index");
+        } else {
+            const errorText = await response.text();
+            alert(`Failed to save order: ${errorText}`);
+        }
+    });
+</script>
+
+
+</body>
+</html>

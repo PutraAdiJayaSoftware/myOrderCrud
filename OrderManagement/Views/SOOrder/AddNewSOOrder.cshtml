@@ -1,0 +1,115 @@
+@{  
+    ViewBag.Title = "Add New Sales Order";  
+}  
+
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="utf-8" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  
+    <style>  
+        body {  
+            background-color: #f8f9fa;  
+        }  
+        .header {  
+            background-color: #007bff;  
+            color: white;  
+            padding: 10px;  
+            text-align: center;  
+        }  
+        .form-section {  
+            background-color: #e9ecef;  
+            padding: 20px;  
+            margin: 20px 0;  
+            border-radius: 5px;  
+        }  
+        .table-section {  
+            background-color: #e9ecef;  
+            padding: 20px;  
+            border-radius: 5px;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <div class="container">  
+        <div class="header">  
+            <h2>Add New - Sales Order</h2>  
+        </div>  
+
+        <div class="form-section">  
+            <h4>Sales Order Information</h4>  
+            <div class="form-group">  
+                <label for="salesOrderNumber">Sales Order Number:</label>  
+                <input type="text" class="form-control" id="salesOrderNumber" placeholder="Enter Sales Order Number" />  
+            </div>  
+            <div class="form-group">  
+                <label for="customer">Customer:</label>  
+                <select class="form-control" id="customer">  
+                    <option>Select One</option>  
+                    <!-- Add customer options here -->  
+                </select>  
+            </div>  
+            <div class="form-group">  
+                <label for="orderDate">Order Date:</label>  
+                <input type="date" class="form-control" id="orderDate" />  
+            </div>  
+            <div class="form-group">  
+                <label for="address">Address:</label>  
+                <input type="text" class="form-control" id="address" placeholder="Enter Address" />  
+            </div>  
+        </div>  
+
+        <div class="table-section">  
+            <h4>Detail Item Information</h4>  
+            <button class="btn btn-primary mb-3" id="addItem">Add Item</button>  
+            <table class="table table-bordered">  
+                <thead>  
+                    <tr>  
+                        <th>No</th>  
+                        <th>ACTION</th>  
+                        <th>ITEM NAME</th>  
+                        <th>QTY</th>  
+                        <th>PRICE</th>  
+                        <th>TOTAL</th>  
+                    </tr>  
+                </thead>  
+                <tbody id="itemTableBody">  
+                    <!-- Dynamic rows will be added here -->  
+                </tbody>  
+                <tfoot>  
+                    <tr>  
+                        <td colspan="4" class="text-right">Total Item:</td>  
+                        <td id="totalItem">0</td>  
+                        <td rowspan="2" class="text-right">Total Amount:</td>  
+                        <td rowspan="2" id="totalAmount">0,00</td>  
+                    </tr>  
+                </tfoot>  
+            </table>  
+            <div class="pagination">  
+                <span>1 - 10 of 28 items</span>  
+                <nav>  
+                    <ul class="pagination">  
+                        <li class="page-item"><a class="page-link" href="#">«</a></li>  
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>  
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>  
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>  
+                        <li class="page-item"><a class="page-link" href="#">»</a></li>  
+                    </ul>  
+                </nav>  
+            </div>  
+        </div>  
+
+        <div class="text-right">  
+            <button class="btn btn-success">Save</button>  
+            <button class="btn btn-secondary">Close</button>  
+        </div>  
+    </div>  
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+    <script>  
+        // JavaScript to handle adding items and calculating totals can be added here  
+    </script>  
+</body>  
+</html>
